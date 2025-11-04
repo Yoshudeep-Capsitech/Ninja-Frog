@@ -35,6 +35,17 @@ public class UILoader : MonoBehaviour
         }
         else
         {
+            // --- THIS IS THE FIX ---
+            // Check if an EventSystem exists in the scene
+            if (FindObjectOfType<UnityEngine.EventSystems.EventSystem>() == null)
+            {
+                // If not, create one
+                GameObject es = new GameObject("EventSystem");
+                es.AddComponent<UnityEngine.EventSystems.EventSystem>();
+                es.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+            }
+            // --- END OF FIX ---
+
             if (currentCanvasInstance == null)
             {
                 currentCanvasInstance = Instantiate(uiCanvasPrefab);

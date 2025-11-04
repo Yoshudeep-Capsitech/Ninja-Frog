@@ -4,80 +4,97 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Movement Settings")]
     public float moveSpeed = 5.56f;
     public float jumpForce = 10.09f;
 
-    private Rigidbody2D rb;
-    private Animator anim; // Controls animations
-    private bool isGrounded;
-
-    // Ground check settings
+    [Header("Ground Check Settings")]
     public Transform groundCheck;
     public LayerMask groundLayer;
     private float groundCheckRadius = 0.2f;
 
+    private Rigidbody2D rb;
+    private Animator anim;
+    private bool isGrounded;
     private float moveInput;
     private bool jumpRequested;
-
     private bool isDead = false;
+
+    private TouchInputManager inputManager; // Reference to mobile input manager
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>(); 
+        anim = GetComponent<Animator>();
 
+        // Create GroundCheck dynamically if not assigned
         if (groundCheck == null)
         {
             GameObject check = new GameObject("GroundCheck");
             check.transform.SetParent(this.transform);
-            check.transform.localPosition = new Vector3(0, -0.15f, 0); 
+            check.transform.localPosition = new Vector3(0, -0.15f, 0);
             groundCheck = check.transform;
         }
+
+        // Try to find the TouchInputManager (optional)
+        inputManager = FindFirstObjectByType<TouchInputManager>();
     }
 
     void Update()
     {
-        moveInput = Input.GetAxisRaw("Horizontal"); 
-        if (TouchInputManager.instance != null && Mathf.Abs(TouchInputManager.instance.HorizontalInput) > 0.1f)
+        // Always try to find manager (in case UI loads later)
+        if (inputManager == null)
+            inputManager = FindFirstObjectByType<TouchInputManager>();
+
+        // --- Horizontal Input ---
+        moveInput = 0f;
+
+        // ✅ Keyboard movement (works in Unity Editor and PC/WebGL builds)
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+            moveInput = -1f;
+        else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+            moveInput = 1f;
+
+        // ✅ Touch/Android movement (only used if available)
+        if (inputManager != null)
         {
-            moveInput = TouchInputManager.instance.HorizontalInput;
+            if (inputManager.moveLeft) moveInput = -1f;
+            if (inputManager.moveRight) moveInput = 1f;
         }
-        anim.SetBool("isRunning", moveInput != 0);
-        anim.SetFloat("yVelocity", rb.linearVelocity.y);
-        anim.SetBool("isGrounded", isGrounded);
 
+        // --- Jump Input ---
+        bool keyboardJump = Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Jump");
+        bool touchJump = (inputManager != null && inputManager.jumpPressed);
 
-        bool keyboardJump = Input.GetButtonDown("Jump"); 
-        
-        bool touchJump = false;
-        if (TouchInputManager.instance != null)
+        if ((keyboardJump || touchJump) && isGrounded)
         {
-            touchJump = TouchInputManager.instance.GetJumpInput();
-        }
-
-        if ((keyboardJump || touchJump) && isGrounded) 
-        {
-            AudioManager.instance.PlayJumpSound(); 
+            AudioManager.instance?.PlayJumpSound();
             jumpRequested = true;
             anim.SetTrigger("doJump");
         }
+
+        // --- Animation parameters ---
+        anim.SetBool("isRunning", moveInput != 0);
+        anim.SetFloat("yVelocity", rb.linearVelocity.y);
+        anim.SetBool("isGrounded", isGrounded);
     }
 
     void FixedUpdate()
     {
+        // Ground check
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
         // Apply horizontal movement
         rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
 
-        // Apply jump force
+        // Apply jump
         if (jumpRequested)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             jumpRequested = false;
         }
     }
-    
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Trap") && !isDead)
@@ -86,12 +103,12 @@ public class PlayerController : MonoBehaviour
             Die();
         }
     }
-    
+
     private void Die()
     {
-        AudioManager.instance.PlaySpikeDeadSound();
+        AudioManager.instance?.PlaySpikeDeadSound();
         Debug.Log("Player hit a trap!");
-        GameManager.instance.HandlePlayerDeath();
+        GameManager.instance?.HandlePlayerDeath();
         gameObject.SetActive(false);
     }
 }
