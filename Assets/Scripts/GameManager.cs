@@ -88,4 +88,8 @@ public class GameManager : MonoBehaviour
         // Load the main menu (build index 0)
         SceneManager.LoadScene(0);
     }
+    public void ResetLives()
+    {
+        currentLives = totalLives;
+    }
 }

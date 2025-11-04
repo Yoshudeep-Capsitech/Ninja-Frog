@@ -8,6 +8,10 @@ public class MainMenuController : MonoBehaviour
     // This function will be linked to the Play button
     public void StartGame()
     {
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.ResetLives();
+        }
         AudioManager.instance.SwitchToLevelMusic();
         AudioManager.instance.PlayButtonClickSound();
         SceneManager.LoadScene(1); 
