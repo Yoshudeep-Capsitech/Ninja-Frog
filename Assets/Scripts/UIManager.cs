@@ -19,7 +19,7 @@ public class UIManager : MonoBehaviour
         else
         {
             Debug.LogWarning("GameManager not found in scene!");
-            livesText.text = "Lives: ?";
+            livesText.text = "Lives: ";
         }
         if (levelText != null)
         {
