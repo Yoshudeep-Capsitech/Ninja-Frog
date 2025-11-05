@@ -20,14 +20,13 @@ public class PlayerController : MonoBehaviour
     private bool jumpRequested;
     private bool isDead = false;
 
-    private TouchInputManager inputManager; // Reference to mobile input manager
+    private TouchInputManager inputManager; 
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
 
-        // Create GroundCheck dynamically if not assigned
         if (groundCheck == null)
         {
             GameObject check = new GameObject("GroundCheck");
@@ -36,26 +35,25 @@ public class PlayerController : MonoBehaviour
             groundCheck = check.transform;
         }
 
-        // Try to find the TouchInputManager (optional)
+        // Try to find the TouchInputManager
         inputManager = FindFirstObjectByType<TouchInputManager>();
     }
 
     void Update()
     {
-        // Always try to find manager (in case UI loads later)
         if (inputManager == null)
             inputManager = FindFirstObjectByType<TouchInputManager>();
 
         // --- Horizontal Input ---
         moveInput = 0f;
 
-        // ✅ Keyboard movement (works in Unity Editor and PC/WebGL builds)
+        // Keyboard movement
         if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
             moveInput = -1f;
         else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
             moveInput = 1f;
 
-        // ✅ Touch/Android movement (only used if available)
+        // Touch/Android movement
         if (inputManager != null)
         {
             if (inputManager.moveLeft) moveInput = -1f;

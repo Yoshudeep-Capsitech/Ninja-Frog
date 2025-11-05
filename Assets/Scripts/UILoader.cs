@@ -35,7 +35,6 @@ public class UILoader : MonoBehaviour
         }
         else
         {
-            // --- THIS IS THE FIX ---
             // Check if an EventSystem exists in the scene
             if (FindObjectOfType<UnityEngine.EventSystems.EventSystem>() == null)
             {
@@ -44,7 +43,6 @@ public class UILoader : MonoBehaviour
                 es.AddComponent<UnityEngine.EventSystems.EventSystem>();
                 es.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
             }
-            // --- END OF FIX ---
 
             if (currentCanvasInstance == null)
             {

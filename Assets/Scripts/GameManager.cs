@@ -19,6 +19,8 @@ public class GameManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             
             currentLives = totalLives;
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 120;
         }
         else
         {
